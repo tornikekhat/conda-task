@@ -23,7 +23,15 @@ git clone https://github.com/tornikekhat/conda-task.git
 cd conda-task
 ```
 
-### 2. Set up Docker
+### 2. Configure the .env file
+
+After the containers are up, copy the .env.example to .env in the project root by running the following command:
+
+```bash
+cp .env.example .env
+```
+
+### 3. Set up Docker
 
 To build and start the Docker containers for the Laravel backend, Vue.js frontend, MySQL database, and Mailhog, run the following command:
 
@@ -31,21 +39,13 @@ To build and start the Docker containers for the Laravel backend, Vue.js fronten
 docker-compose up -d --build
 ```
 
-### 3. Configure the .env file
-
-After the containers are up, copy the .env.example to .env in the project root. You can do this inside the container or locally:
-
-```bash
-docker-compose exec app cp .env.example .env
-```
-
 ### 4. Run migrations and generate the application key
 
 Once the containers are set up, you need to run the database migrations and generate the application key. You can do this by running the following commands inside the Laravel container:
 
 ```bash
-docker-compose exec app php artisan key:generate
-docker-compose exec app php artisan migrate
+docker exec -it my-laravel-app php artisan key:generate
+docker exec -it my-laravel-app php artisan migrate
 ```
 
 ### 5. Access the application
