@@ -39,11 +39,12 @@ To build and start the Docker containers for the Laravel backend, Vue.js fronten
 docker-compose up -d --build
 ```
 
-### 4. Run migrations and generate the application key
+### 4. Install Composer dependencies, run migrations and generate the application key
 
-Once the containers are set up, you need to run the database migrations and generate the application key. You can do this by running the following commands inside the Laravel container:
+Once the containers are set up, you need to install Composer dependencies, run the database migrations and generate the application key. You can do this by running the following commands inside the Laravel container:
 
 ```bash
+docker exec -it my-laravel-app composer install
 docker exec -it my-laravel-app php artisan key:generate
 docker exec -it my-laravel-app php artisan migrate
 ```
