@@ -5,7 +5,7 @@
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                 <input
-                    v-model="form.name"
+                    v-model="name"
                     id="name"
                     type="text"
                     class="mt-1 p-2 w-full border border-gray-300 rounded-md"
@@ -17,7 +17,7 @@
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                 <input
-                    v-model="form.email"
+                    v-model="email"
                     id="email"
                     type="email"
                     class="mt-1 p-2 w-full border border-gray-300 rounded-md"
@@ -29,7 +29,7 @@
             <div class="mb-4">
                 <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
                 <input
-                    v-model="form.subject"
+                    v-model="subject"
                     id="subject"
                     type="text"
                     class="mt-1 p-2 w-full border border-gray-300 rounded-md"
@@ -41,7 +41,7 @@
             <div class="mb-4">
                 <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
                 <textarea
-                    v-model="form.message"
+                    v-model="message"
                     id="message"
                     rows="4"
                     class="mt-1 p-2 w-full border border-gray-300 rounded-md"
@@ -66,57 +66,47 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 import axios from 'axios';
+import {useForm, useField} from 'vee-validate';
+import {object, string} from 'yup';
 
-const form = ref({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+const schema = object({
+    name: string().required('Name is required.'),
+    email: string().required('Email is required.').email('Invalid email address.'),
+    subject: string().required('Subject is required.'),
+    message: string().required('Message is required.'),
 });
-const errors = ref({});
-const isSubmitting = ref(false);
+
+const {handleSubmit, errors, isSubmitting, resetForm} = useForm({
+    validationSchema: schema,
+});
+
+const {value: name} = useField('name');
+const {value: email} = useField('email');
+const {value: subject} = useField('subject');
+const {value: message} = useField('message');
+
 const submissionStatus = ref(null);
 const submissionStatusClass = ref('');
 
-const submitForm = async () => {
-    errors.value = {};
+const submitForm = handleSubmit(async (values) => {
     submissionStatus.value = null;
     submissionStatusClass.value = '';
 
-    if (!form.value.name || !form.value.email || !form.value.subject || !form.value.message) {
-        errors.value = {
-            name: form.value.name ? null : 'Name is required.',
-            email: form.value.email ? null : 'Email is required.',
-            subject: form.value.subject ? null : 'Subject is required.',
-            message: form.value.message ? null : 'Message is required.',
-        };
-        return;
-    }
-
-    if (!isValidEmail(form.value.email)) {
-        errors.value.email = 'Invalid email address.';
-        return;
-    }
-
-    isSubmitting.value = true;
-
     try {
-        const response = await axios.post('/api/contacts', form.value);
+        const response = await axios.post('/api/contacts', values);
         submissionStatus.value = response.data.message;
         submissionStatusClass.value = 'text-green-500';
-        form.value = {name: '', email: '', subject: '', message: ''};
+
+        resetForm();
     } catch (error) {
         submissionStatus.value = 'Failed to send message.';
         submissionStatusClass.value = 'text-red-500';
     } finally {
-        isSubmitting.value = false;
+        setTimeout(() => {
+            submissionStatus.value = null;
+        }, 3000);
     }
-};
-
-const isValidEmail = (email) => {
-    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    return regex.test(email);
-};
+});
 </script>
